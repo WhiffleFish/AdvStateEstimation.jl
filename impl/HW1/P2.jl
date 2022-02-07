@@ -33,4 +33,38 @@ var_error = rel_error(experimental_var, analytical_var)
 
 μ = 2
 σ² = 3
-dist = Normal(μ,σ²)
+dist = Normal(μ,sqrt(σ²))
+
+mle = GaussianMLE(dist, 5)
+fig = likelihood_contour(
+    mle,
+    LinRange(-3,3,1000),
+    LinRange(0.5,8,1000);
+    n_contours = 200,
+    colormap = :magma
+)
+save("P2C5.svg", fig)
+
+mle = GaussianMLE(dist, 10)
+fig = likelihood_contour(
+    mle,
+    LinRange(-3,3,1000),
+    LinRange(0.5,8,1000);
+    n_contours = 200,
+    colormap = :magma
+)
+
+save("P2C10.svg", fig)
+
+mle = GaussianMLE(dist, 50)
+fig = likelihood_contour(
+    mle,
+    LinRange(-3,3,1000),
+    LinRange(0.5,8,1000);
+    n_contours = 200,
+    colormap = :magma
+)
+
+save("P2C50.svg", fig)
+
+## d

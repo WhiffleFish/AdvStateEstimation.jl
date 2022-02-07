@@ -42,3 +42,56 @@ function CairoMakie.plot(mle_vec::Vector{BernoulliMLE})
     end
     return fig
 end
+
+##
+
+struct GaussianMLE{D<:Normal}
+    dist::D
+    N::Int
+    Y::Vector{Float64}
+end
+
+GaussianMLE(dist::Normal, N::Int) = GaussianMLE(dist, N, rand(dist,N))
+
+mean(mle::GaussianMLE) = sum(mle.Y)/mle.N
+
+variance(mle::GaussianMLE, μ::Number) = sum((y - μ)^2 for y in mle.Y)/mle.N
+
+function variance(mle::GaussianMLE)
+    μ = mean(mle.dist) # default to true mean
+    return sum((y - μ)^2 for y in mle.Y)/mle.N
+end
+
+function MLE(mle::GaussianMLE)
+    return mean(mle), variance(mle)
+end
+
+function log_likelihood(μ, σ, mle::GaussianMLE)
+    return -inv(2*σ^2)*sum((y-μ)^2 for y in mle.Y) - mle.N*log(σ*sqrt(2π))
+end
+
+function likelihood_contour(
+    mle::GaussianMLE,
+    μ_vec::AbstractVector,
+    σ2_vec::AbstractVector;
+    n_contours::Int=100,
+    kwargs...
+    )
+
+    ll = [-log_likelihood(μ, sqrt(σ²), mle) for μ in μ_vec, σ² in σ2_vec]
+    μ = mean(mle)
+    σ² = variance(mle, μ)
+
+    fig = Figure()
+    ax = Axis(fig[1, 1]; xlabel = L"\hat{\mu}", ylabel = L"\hat{\sigma}^2")
+    hm = contour!(
+        ax,
+        μ_vec,
+        σ2_vec,
+        ll;
+        levels = LinRange(extrema(ll)..., n_contours),
+        kwargs...)
+    scatter!(ax, [μ], [σ²], marker='x', markersize=50)
+    Colorbar(fig[1, 2], hm, label = L"-l(Y_{1:N}; \mu, \sigma^2)")
+    return fig
+end
