@@ -53,17 +53,17 @@ end
 
 GaussianMLE(dist::Normal, N::Int) = GaussianMLE(dist, N, rand(dist,N))
 
-mean(mle::GaussianMLE) = sum(mle.Y)/mle.N
+StatsBase.mean(mle::GaussianMLE) = sum(mle.Y)/mle.N
 
-variance(mle::GaussianMLE, μ::Number) = sum((y - μ)^2 for y in mle.Y)/mle.N
+StatsBase.var(mle::GaussianMLE, μ::Number) = sum((y - μ)^2 for y in mle.Y)/mle.N
 
-function variance(mle::GaussianMLE)
+function StatsBase.var(mle::GaussianMLE)
     μ = mean(mle.dist) # default to true mean
     return sum((y - μ)^2 for y in mle.Y)/mle.N
 end
 
 function MLE(mle::GaussianMLE)
-    return mean(mle), variance(mle)
+    return mean(mle), var(mle)
 end
 
 function log_likelihood(μ, σ, mle::GaussianMLE)
@@ -80,7 +80,7 @@ function likelihood_contour(
 
     ll = [-log_likelihood(μ, sqrt(σ²), mle) for μ in μ_vec, σ² in σ2_vec]
     μ = mean(mle)
-    σ² = variance(mle, μ)
+    σ² = var(mle, μ)
 
     fig = Figure()
     ax = Axis(fig[1, 1]; xlabel = L"\hat{\mu}", ylabel = L"\hat{\sigma}^2")

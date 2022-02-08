@@ -30,41 +30,38 @@ bias_error = rel_error(experimental_bias, analytical_bias)
 var_error = rel_error(experimental_var, analytical_var)
 
 ## c
+p2cplot(m) = likelihood_contour(
+    m,
+    LinRange(-3,3,1000),
+    LinRange(0.5,8,1000);
+    n_contours = 200,
+    colormap = :magma
+)
 
 μ = 2
 σ² = 3
 dist = Normal(μ,sqrt(σ²))
 
 mle = GaussianMLE(dist, 5)
-fig = likelihood_contour(
-    mle,
-    LinRange(-3,3,1000),
-    LinRange(0.5,8,1000);
-    n_contours = 200,
-    colormap = :magma
-)
+fig = p2cplot(mle)
 save("P2C5.svg", fig)
 
 mle = GaussianMLE(dist, 10)
-fig = likelihood_contour(
-    mle,
-    LinRange(-3,3,1000),
-    LinRange(0.5,8,1000);
-    n_contours = 200,
-    colormap = :magma
-)
+fig = p2cplot(mle)
 
 save("P2C10.svg", fig)
 
 mle = GaussianMLE(dist, 50)
-fig = likelihood_contour(
-    mle,
-    LinRange(-3,3,1000),
-    LinRange(0.5,8,1000);
-    n_contours = 200,
-    colormap = :magma
-)
+fig = p2cplot(mle)
 
 save("P2C50.svg", fig)
 
 ## d
+μ = 2
+σ² = 3
+dist = Normal(μ,sqrt(σ²))
+
+mles = [GaussianMLE(dist, 10) for _ in 1:5000]
+estimates = MLE.(mles)
+mean(first.(estimates))
+var(first.(estimates))
