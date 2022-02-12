@@ -1,33 +1,40 @@
+## imports
 using AdvStateEstimation
 import AdvStateEstimation as SE
 BLAS.set_num_threads(1)
-vars = matread(joinpath(@__DIR__, "homework1_missileprob_data.mat"))
 
+## setup + read data
+vars = matread(joinpath(@__DIR__, "homework1_missileprob_data.mat"))
 ystacked = dropdims(vars["ystacked"]; dims=2)
-x0true = dropdims(vars["x0true"]; dims=2)
+x0true = SVector{4,Float64}(dropdims(vars["x0true"]; dims=2))
 
 rocket = Rocket()
 nls = GaussNewtonNLS(rocket, ystacked, α=0.5)
 
-x0 = x0true + [10,5,1,10]
+## 'Good' initial condition
+x0 = SA[10.,40.,2300.,30.]
+x , opt_hist = update!(nls, x0, 30; hist=true)
+f1 = plot(opt_hist, ystacked)
+f2 = SE.plotx(opt_hist, x0true)
+Cdata = SE.MCTrials(nls, x0true, x0, 50, 1000)
+f3 = plot(MCdata, x0true)
+SE.bias(MCdata, x0true)
+SE.error_cov(MCdata, x0true)
 
-x, opt_hist = update!(nls, x0, 100; hist=true)
+save(joinpath(@__DIR__,"img", "GoodOptHist.svg"), f1)
+save(joinpath(@__DIR__,"img", "GoodxHist.svg"), f2)
+save(joinpath(@__DIR__,"img", "GoodMCSims.svg"), f3)
 
-plot(opt_hist)
-plot(getindex.(opt_hist.x,3))
+## 'Bad' initial condition
+x0 = SA[130.,4.,2.,6050.]
+x , opt_hist = update!(nls, x0, 30; hist=true)
+f1 = plot(opt_hist, ystacked)
+f2 = SE.plotx(opt_hist, x0true)
+MCdata = SE.MCTrials(nls, x0true, x0, 50, 1000)
+f3 = plot(MCdata, x0true)
+SE.bias(MCdata, x0true)
+SE.error_cov(MCdata, x0true)
 
-Y = Iterators.partition(SE.measvec(rocket, x, 40),2) |> collect
-
-idx = 2
-p = plot(getindex.(Y,idx),marker='o', color=:blue, markersize=15)
-plot!(getindex.(collect(Iterators.partition(ystacked, 2)),idx), marker='x', color=:red, markersize=15)
-current_figure()
-
-AdvStateEstimation.stack_meas_jac(rocket, x0, 40)
-
-##
-using Zygote
-rocket_meas(x) = meas(rocket, x)
-
-using Test
-@test first(Zygote.jacobian(rocket_meas, x0true)) ≈ meas_jac(rocket, x0true)
+save(joinpath(@__DIR__,"img", "BadOptHist.svg"), f1)
+save(joinpath(@__DIR__,"img", "BadxHist.svg"), f2)
+save(joinpath(@__DIR__,"img", "BadMCSims.svg"), f3)
