@@ -7,7 +7,7 @@ mles = [BernoulliMLE(x0,5), BernoulliMLE(x0,10), BernoulliMLE(x0,50)]
 
 fig = plot(mles)
 
-save(joinpath("img","P2a.svg"), fig)
+save(joinpath(@__DIR__, "img","P2a.svg"), fig)
 
 ## b
 
@@ -44,17 +44,17 @@ dist = Normal(μ,sqrt(σ²))
 
 mle = GaussianMLE(dist, 5)
 fig = p2cplot(mle)
-save("P2C5.svg", fig)
+save(joinpath(@__DIR__, "img","P2C5.svg"), fig)
 
 mle = GaussianMLE(dist, 10)
 fig = p2cplot(mle)
 
-save("P2C10.svg", fig)
+save(joinpath(@__DIR__, "img","P2C10.svg"), fig)
 
 mle = GaussianMLE(dist, 50)
 fig = p2cplot(mle)
 
-save("P2C50.svg", fig)
+save(joinpath(@__DIR__, "img","P2C50.svg"), fig)
 
 ## d
 μ = 2

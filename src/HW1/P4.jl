@@ -88,10 +88,14 @@ Base.@kwdef mutable struct GaussNewtonNLS{M, R<:AbstractMatrix}
     _y_cache::Vector{Float64} = similar(Y)
 end
 
-function GaussNewtonNLS(model::Rocket, Y; kwargs...)
+function blkdiag(A::AbstractMatrix, N::Int)
+    return cat(Iterators.repeated(A,N)..., dims=(1,2))
+end
+
+function GaussNewtonNLS(model::Rocket, Y::AbstractVector; kwargs...)
     R = model.R
     N = length(Y) ÷ 2
-    Rbig_inv = cat((R for _ in 1:N)..., dims=(1,2)) |> Symmetric |> inv
+    Rbig_inv = blkdiag(R,N) |> Symmetric |> inv
     return GaussNewtonNLS(;model, Y, N, Rbig_inv, kwargs...)
 end
 
