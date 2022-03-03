@@ -67,7 +67,7 @@ function stack_meas_jac(r::Rocket, x, N)
     Hc = Matrix{Float64}(undef, N*np, n)
     for i in 0:(N-1)
         x = dynamics(r, x)
-        t = (i)*Δt
+        t = (i+1)*Δt
         ∇h = meas_jac(r, x)*state_jac(r,t)
         start_idx = 1+(np*i)
         Hc[start_idx:(start_idx+np-1),:] .= ∇h

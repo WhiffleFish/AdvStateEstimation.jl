@@ -34,7 +34,7 @@ p2cplot(m) = likelihood_contour(
     m,
     LinRange(-3,3,1000),
     LinRange(0.5,8,1000);
-    n_contours = 200,
+    n_contours = 100,
     colormap = :magma
 )
 

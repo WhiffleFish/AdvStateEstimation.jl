@@ -70,6 +70,10 @@ function log_likelihood(μ, σ, mle::GaussianMLE)
     return -inv(2*σ^2)*sum((y-μ)^2 for y in mle.Y) - mle.N*log(σ*sqrt(2π))
 end
 
+function logspace(x1, x2, N::Int=100)
+    return exp.(LinRange(log(x1), log(x2), N))
+end
+
 function likelihood_contour(
     mle::GaussianMLE,
     μ_vec::AbstractVector,
@@ -89,7 +93,7 @@ function likelihood_contour(
         μ_vec,
         σ2_vec,
         ll;
-        levels = LinRange(extrema(ll)..., n_contours),
+        levels = logspace(extrema(ll)..., n_contours),
         kwargs...)
     scatter!(ax, [μ], [σ²], marker='x', markersize=50)
     Colorbar(fig[1, 2], hm, label = L"-l(Y_{1:N}; \mu, \sigma^2)")
