@@ -9,9 +9,9 @@ ystacked = dropdims(vars["ystacked"]; dims=2)
 x0true = SVector{4,Float64}(dropdims(vars["x0true"]; dims=2))
 
 rocket = Rocket()
-nls = GaussNewtonNLS(rocket, ystacked, α=0.1)
-x, opt = update!(nls, x0, 200; hist=true)
-last(opt.J)
+
+nls = GaussNewtonNLS(rocket, ystacked, α=0.5)
+
 ## b
 fig = Figure()
 ax = Axis(
@@ -37,6 +37,7 @@ save(joinpath(@__DIR__,"img", "LearningRateComparison.svg"), fig)
 ## 'Good' initial condition
 x0 = SA[10.,40.,2300.,30.]
 x , opt_hist = update!(nls, x0, 30; hist=true)
+
 f1 = plot(opt_hist, ystacked)
 f2 = SE.plotx(opt_hist, x0true)
 Cdata = SE.MCTrials(nls, x0true, x0, 50, 1000)
@@ -51,6 +52,7 @@ save(joinpath(@__DIR__,"img", "GoodMCSims.svg"), f3)
 ## 'Bad' initial condition
 x0 = SA[130.,4.,2.,6050.]
 x , opt_hist = update!(nls, x0, 30; hist=true)
+
 f1 = plot(opt_hist, ystacked)
 f2 = SE.plotx(opt_hist, x0true)
 MCdata = SE.MCTrials(nls, x0true, x0, 50, 1000)

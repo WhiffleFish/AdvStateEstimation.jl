@@ -26,7 +26,7 @@ analytical_bias = 0.0
 experimental_var = var_MLE
 analytical_var = x0*(1-x0)/Ny
 
-bias_error = rel_error(experimental_bias, analytical_bias)
+mean_error = rel_error(μ_MLE, x0)
 var_error = rel_error(experimental_var, analytical_var)
 
 ## c
@@ -60,8 +60,13 @@ save(joinpath(@__DIR__, "img","P2C50.svg"), fig)
 μ = 2
 σ² = 3
 dist = Normal(μ,sqrt(σ²))
-
-mles = [GaussianMLE(dist, 10) for _ in 1:5000]
+N = 5000
+mles = [GaussianMLE(dist, 10) for _ in 1:N]
 estimates = MLE.(mles)
-mean(first.(estimates))
-var(first.(estimates))
+
+μ_MLE, v = mean_and_var(first.(estimates))
+
+estim_var = σ² / 10
+
+rel_error(μ_MLE, μ)
+rel_error(v, estim_var)
