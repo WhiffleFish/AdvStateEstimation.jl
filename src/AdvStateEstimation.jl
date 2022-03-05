@@ -7,6 +7,7 @@ using Reexport
 @reexport using Distributions
 @reexport using StatsBase
 @reexport using LinearAlgebra
+using Optim
 using LaTeXStrings
 
 include(joinpath("HW1", "P2.jl"))
@@ -15,5 +16,8 @@ export GaussianMLE, likelihood_contour
 
 include(joinpath("HW1", "P4.jl"))
 export GaussNewtonNLS, Rocket, update!
+
+include(joinpath("HW2", "P3.jl"))
+export easting_alt
 
 end # module
