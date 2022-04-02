@@ -20,4 +20,6 @@ export GaussNewtonNLS, Rocket, update!
 include(joinpath("HW2", "P3.jl"))
 export easting_alt
 
+include(joinpath("HW3", "HW3.jl"))
+
 end # module
