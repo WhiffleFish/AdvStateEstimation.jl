@@ -45,18 +45,6 @@ end
 
 Base.size(gf::GridFilter) = size(gf.grid)
 
-function single_dim_idx(iter, x_i)
-    idx = 0
-    for k_i in iter
-        if k_i ≤ x_i
-            idx += 1
-        else
-            break
-        end
-    end
-    return idx
-end
-
 function predict!(gf::GridFilter)
     CI = CartesianIndices(size(gf))
     Δx = _dx(gf.grid)
@@ -91,4 +79,56 @@ end
 function step!(gf::GridFilter, y)
     predict!(gf)
     update!(gf, y)
+end
+
+## (b) Point Estimates
+
+function MAP(gf::GridFilter)
+    prob = gf.grid.prob
+    idx = argmax(prob)
+    return gf.grid[idx]
+end
+
+function MMSE(gf::GridFilter)
+    x = zeros(Float64, length(size(gf)))
+    pg = gf.grid
+    prob = pg.prob
+    grid = pg.grid
+    for ci in CartesianIndices(size(gf))
+        x += prob[ci]*pg[ci]
+    end
+    return x
+end
+
+
+## (c) Importance Sampling
+
+struct ISParticleFilter{Q,P,S}
+    q::Q # proposal q(x;Y)
+    p::P # joint p(x,Y)
+    particles::Vector{S}
+    weights::Vector{Float64}
+end
+
+ISParticleFilter(q,p,n::Int) = ISParticleFilter(q, p, [rand(q) for _ in 1:n], Vector{Float64}(undef, n))
+
+function step!(pf::ISParticleFilter, y)
+    ps = pf.particles
+    for i in eachindex(pf.weights)
+        p = ps[i]
+        pf.weights[i] = pdf(pf.p, p, y) / pdf(pf.q, p)
+    end
+    normalize!(pf.weights, 1)
+end
+
+function MMSE(pf::ISParticleFilter)
+    x = zero(first(pf.particles))
+    for (p,w) in zip(pf.particles, pf.weights)
+        x += w*p
+    end
+    return x
+end
+
+function MAP(pf::ISParticleFilter)
+    return pf.particles[argmax(pf.weights)]
 end
