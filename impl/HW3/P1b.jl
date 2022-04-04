@@ -32,4 +32,4 @@ m = meshscatter(
     textsize = 100
 )
 
-save(joinpath(@__DIR__, "img", "P1c_scatter3D.pdf"), m)
+save(joinpath(@__DIR__, "img", "P1c_scatter3D.png"), m; resolution=(1920,1080))
