@@ -1,5 +1,5 @@
 using AdvStateEstimation
-# using AdvStateEstimation.HW3
+using AdvStateEstimation.HW3
 const SE = AdvStateEstimation
 
 struct P1Meas end
@@ -37,6 +37,8 @@ gf = GridFilter(
     ProbGrid([1.:0.05:14.,0.05:0.05:30.], P1Prior())
 )
 
+HW3.marginal_meas!(gf, Y[1:3])
+
 Y = [91.56, 70.43, 108.67]
 
 fig = Figure()
@@ -59,16 +61,20 @@ gf = GridFilter(
 )
 
 Y = [91.56, 70.43, 108.67]
-step!(gf, Y[1])
-heatmap(
-    pg.grid...,
-    pg.prob;
-    colormap=:magma,
-    xlabel="x",
-    ylabel="z",
-    axis = (;limits=(nothing, nothing, 0.05, 10.))
-)
+@show SE.HW3.MAP(gf)
+@show SE.HW3.MMSE(gf)
+for i in eachindex(Y)
+    @show i
+    step!(gf, Y[i])
+    heatmap(
+        pg.grid...,
+        pg.prob;
+        colormap = :magma,
+        xlabel = "x",
+        ylabel = "z",
+        axis = (;limits=(nothing, nothing, 0.05, 10.))
+    ) |> display
 
-SE.HW3.MAP(gf)
-
-SE.HW3.MMSE(gf)
+    @show SE.HW3.MAP(gf)
+    @show SE.HW3.MMSE(gf)
+end

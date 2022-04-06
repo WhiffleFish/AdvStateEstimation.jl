@@ -70,10 +70,28 @@ function update!(gf::GridFilter, y)
     pg = gf.grid
     prob = pg.prob
     for ci in CI
-        w_sum = 0.0
         prob[ci] *= pdf(gf.meas, pg[ci] + Δx/2, y)
     end
     normalize!(prob, 1)
+end
+
+function marginal_meas!(gf::GridFilter, Y)
+    CI = CartesianIndices(size(gf))
+    Δx = _dx(gf.grid)
+    ΔA = prod(Δx)
+    pg = gf.grid
+    prob = pg.prob
+
+    py = 0.0
+    for ci in CI
+        pX = prob[ci]
+        p = 1.0
+        for y in Y
+            p *= pdf(gf.meas, pg[ci] + Δx/2, y)
+        end
+        py += p*pX*ΔA
+    end
+    return py
 end
 
 function step!(gf::GridFilter, y)
@@ -94,6 +112,7 @@ function MMSE(gf::GridFilter)
     pg = gf.grid
     prob = pg.prob
     grid = pg.grid
+    normalize!(prob, 1)
     for ci in CartesianIndices(size(gf))
         x += prob[ci]*pg[ci]
     end
