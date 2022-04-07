@@ -31,13 +31,8 @@ Base.rand(prior::P1Prior) = SA[rand(Uniform(1,11)), rand(Gamma(2,2))]
 
 SE.HW3.predict!(gf::GridFilter{P1Trans,P1Meas}) = gf.grid.prob
 
-gf = GridFilter(
-    P1Trans(),
-    P1Meas(),
-    ProbGrid([1.:0.05:14.,0.05:0.05:30.], P1Prior())
-)
 
-HW3.marginal_meas!(gf, Y[1:3])
+##
 
 Y = [91.56, 70.43, 108.67]
 
@@ -66,15 +61,6 @@ Y = [91.56, 70.43, 108.67]
 for i in eachindex(Y)
     @show i
     step!(gf, Y[i])
-    heatmap(
-        pg.grid...,
-        pg.prob;
-        colormap = :magma,
-        xlabel = "x",
-        ylabel = "z",
-        axis = (;limits=(nothing, nothing, 0.05, 10.))
-    ) |> display
-
     @show SE.HW3.MAP(gf)
     @show SE.HW3.MMSE(gf)
 end
