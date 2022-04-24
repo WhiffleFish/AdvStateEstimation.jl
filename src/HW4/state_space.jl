@@ -15,7 +15,10 @@ struct DTStateSpace{T}
     M::T
     Q::T
     R::T
+    Δt::Float64
 end
+
+statedim(ss::DTStateSpace) = size(ss.F,1)
 
 function c2d(ss::CTStateSpace, Δt::Float64)
     (;A,B,C,D,Γ,W,V) = ss
@@ -36,16 +39,16 @@ function c2d(ss::CTStateSpace, Δt::Float64)
             zeros(nx,nx) A']
     Ẑ = exp(Z)
 
-    F = Ẑ[(nx+1):end,(nx+1):end]'
+    F = Ẑ[(nx+1):end,(nx+1):end]' |> copy
     Q = F*Ẑ[1:nx,(nx+1):end]
-    R = V*Δt
-    return DTStateSpace(F,G,H,M,Q,R)
+    R = reshape([V*Δt], 1, 1)
+    return DTStateSpace(F,G,H,M,Q,R,Δt)
 end
 
-dynamics(ss::DTStateSpace, x, u) = ss.F*x + ss.G*u
+dynamics(ss::DTStateSpace, x, u) = ss.F*x .+ ss.G*u
 
 noisy_dynamics(ss::DTStateSpace, x, u) = rand(MvNormal(dynamics(ss, x, u), ss.Q))
 
-meas(ss::DTStateSpace, x, u) = ss.H*x + ss.M*u
+meas(ss::DTStateSpace, x, u) = ss.H*x .+ ss.M*u
 
 noisy_meas(ss::DTStateSpace, x, u) = rand(MvNormal(meas(ss, x, u), ss.R))

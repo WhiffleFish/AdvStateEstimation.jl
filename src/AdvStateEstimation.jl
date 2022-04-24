@@ -22,4 +22,6 @@ export easting_alt
 
 include(joinpath("HW3", "HW3.jl"))
 
+include(joinpath("HW4", "HW4.jl"))
+
 end # module
