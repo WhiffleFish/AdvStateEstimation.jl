@@ -24,7 +24,10 @@ kf = UnscentedKF(ss_dt, x0, P0; α=sqrt(0.5/2  + 1))
 sim = KFSimulator(kf, x0, u)
 simulate(sim, 15.)
 
-kf.sigma_points
+lines(sim.xhist .|> first)
+lines!(sim.xphist .|> first)
+current_figure()
+
 
 λ = HW4.lambda(kf)
 λ / (2 + λ)

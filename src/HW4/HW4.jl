@@ -2,6 +2,7 @@ module HW4
 
 using LinearAlgebra
 using Distributions
+using StatsBase
 using CairoMakie
 
 include("state_space.jl")
