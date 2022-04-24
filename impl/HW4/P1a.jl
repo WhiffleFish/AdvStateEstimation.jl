@@ -23,7 +23,17 @@ IF = InformationFilter(ss_dt, I0, i0)
 u(t) = SA[2cos(0.75t)]
 sim = IFSimulator(IF, x0, u)
 
-simulate(sim, ss_dt, 15.0)
+t, x, y = simulate(ss_dt, x0, u, 15.0)
+const TIMES = t
+const X_DATA = x
+const Y_DATA = y
+
+sim.yhist
+HW4.load!(sim, TIMES, X_DATA, Y_DATA)
+
+sim.yhist
+
+simulate(sim)
 
 ##  plot the individual state errors with 2σ estimation error covariance bounds vs. time
 covar = HW4.covariance(sim) .|> diag

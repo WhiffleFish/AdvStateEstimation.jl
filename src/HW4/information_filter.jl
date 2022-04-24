@@ -100,4 +100,29 @@ function simulate(sim::IFSimulator, ss::DTStateSpace, T::Float64)
     end
 end
 
+function load!(sim::IFSimulator, t::Vector, x::Vector, y::Vector)
+    (;thist, xhist, yhist) = sim
+    resize!(sim, length(t))
+    copyto!(thist, t)
+    copyto!(xhist, x)
+    @views copyto!(yhist[2:end], y[2:end])
+end
+
+function simulate(sim::IFSimulator)
+    (;thist, xhist, xpredhist, yhist, imhist, iphist, Imhist, Iphist, IF) = sim
+
+    for (i,t) in enumerate(thist[1:end-1])
+        u = sim.u(t)
+        x = xhist[i+1]
+        y = yhist[i+1]
+        update!(IF, u, y)
+
+        xpredhist[i+1] = inv(IF.I_p)*IF.i_p
+        imhist[i+1] = copy(IF.i_m)
+        iphist[i+1] = copy(IF.i_p)
+        Imhist[i+1] = copy(IF.I_m)
+        Iphist[i+1] = copy(IF.I_p)
+    end
+end
+
 covariance(sim::IFSimulator) = inv.(sim.Iphist)

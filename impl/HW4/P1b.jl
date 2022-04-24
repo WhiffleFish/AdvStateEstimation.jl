@@ -19,7 +19,7 @@ u(t) = SA[2cos(0.75t)]
 ##
 x0 = zeros(2)
 P0 = 10.0*I(2) |> Matrix
-kf = UnscentedKF(ss_dt, x0, P0; α=sqrt(1/2 + 1))
+kf = UnscentedKF(ss_dt, x0, P0; α=sqrt(0.5/2  + 1))
 
 sim = KFSimulator(kf, x0, u)
 simulate(sim, 15.)

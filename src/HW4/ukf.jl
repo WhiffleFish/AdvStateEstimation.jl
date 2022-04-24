@@ -150,6 +150,14 @@ function KFSimulator(kf::UnscentedKF, x0, u)
     )
 end
 
+function load!(sim::KFSimulator, t::Vector, x::Vector, y::Vector)
+    (;thist, xhist, yhist) = sim
+    resize!(sim, length(t))
+    copyto!(thist, t)
+    copyto!(xhist, x)
+    @views copyto!(yhist[2:end], y[2:end])
+end
+
 function Base.resize!(sim::KFSimulator, sz::Int)
     resize!(sim.thist, sz)
     resize!(sim.xhist, sz)
@@ -182,4 +190,22 @@ function simulate(sim::KFSimulator, T::Float64)
         Pkmhist[i+1] = copy(kf.Pkm)
         Pkphist[i+1] = copy(kf.Pkp)
     end
+end
+
+function simulate(sim::KFSimulator)
+    (;thist, xhist, xmhist, xphist, yhist, Pkmhist, Pkphist, kf) = sim
+    ss = kf.ss
+
+    for (i,t) in enumerate(thist[1:end-1])
+        u = sim.u(t)
+        x = xhist[i+1]
+        y = yhist[i+1]
+        update!(kf, u, y)
+
+        xmhist[i+1] = kf.xm
+        xphist[i+1] = kf.xp
+        Pkmhist[i+1] = copy(kf.Pkm)
+        Pkphist[i+1] = copy(kf.Pkp)
+    end
+    return sim
 end

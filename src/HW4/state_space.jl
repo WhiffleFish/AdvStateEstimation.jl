@@ -52,3 +52,22 @@ noisy_dynamics(ss::DTStateSpace, x, u) = rand(MvNormal(dynamics(ss, x, u), ss.Q)
 meas(ss::DTStateSpace, x, u) = ss.H*x .+ ss.M*u
 
 noisy_meas(ss::DTStateSpace, x, u) = rand(MvNormal(meas(ss, x, u), ss.R))
+
+observation(ss::DTStateSpace, x, u) = MvNormal(meas(ss,x,u), ss.R)
+
+function simulate(ss::DTStateSpace, x, u_f, T)
+    times = 0.0:ss.Δt:T |> collect
+    xhist = Vector{Vector{Float64}}(undef, length(times))
+    yhist = Vector{Vector{Float64}}(undef, length(times))
+    xhist[1] = x
+
+    for (i,t) in enumerate(times[1:end-1])
+        u = u_f(t)
+        x = noisy_dynamics(ss, x, u)
+        y = noisy_meas(ss, x, u)
+
+        xhist[i+1] = x
+        yhist[i+1] = y
+    end
+    return times, xhist, yhist
+end

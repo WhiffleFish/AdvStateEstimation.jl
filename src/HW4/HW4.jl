@@ -2,6 +2,7 @@ module HW4
 
 using LinearAlgebra
 using Distributions
+using CairoMakie
 
 include("state_space.jl")
 export CTStateSpace, DTStateSpace, c2d
@@ -11,5 +12,8 @@ export InformationFilter, IFSimulator, simulate
 
 include("ukf.jl")
 export UnscentedKF, KFSimulator
+
+include("pf.jl")
+export BootstrapPF, PFSimulator
 
 end
