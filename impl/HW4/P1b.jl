@@ -28,5 +28,5 @@ simulate(sim)
 fig = HW4.plot_error(sim)
 save(joinpath(@__DIR__, "img", "P1bStateError.pdf"), fig)
 
-HW4.plot_meas(sim)
+fig = HW4.plot_meas(sim)
 save(joinpath(@__DIR__, "img", "P1bMeasInnovation.pdf"), fig)
