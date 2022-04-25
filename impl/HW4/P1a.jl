@@ -28,10 +28,7 @@ const TIMES = t
 const X_DATA = x
 const Y_DATA = y
 
-sim.yhist
 HW4.load!(sim, TIMES, X_DATA, Y_DATA)
-
-sim.yhist
 
 simulate(sim)
 

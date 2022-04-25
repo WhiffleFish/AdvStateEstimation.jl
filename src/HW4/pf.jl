@@ -177,13 +177,32 @@ function CairoMakie.plot(sim::PFSimulator; Ness=false)
         ax = Axis(fig[i,1], ylabel=L"x_{%$i}")
         x, y = state_hist(sim, i)
         scatter!(ax, x, y, color=(:black,0.01), label="Particle Belief")
-        lines!(ax, sim.thist, getindex.(sim.xhist, i), lable="True State")
-        lines!(sim.thist, getindex.(mmse_hist, i), label="MMSE")
-        lines!(sim.thist, getindex.(map_hist, i), label="MAP")
+        lines!(ax, sim.thist, getindex.(sim.xhist, i), label="True State")
+        lines!(ax, sim.thist, getindex.(mmse_hist, i), label="MMSE")
+        lines!(ax, sim.thist, getindex.(map_hist, i), label="MAP")
+        isone(i) && axislegend(ax, labelsize=10, patchsize=(10,10))
     end
     if Ness
         ax = Axis(fig[n+1,1], ylabel = L"N_{ess}")
         lines!(ax, sim.thist, sim.Ness)
+    end
+    return fig
+end
+
+function plot_error(sim::PFSimulator)
+    mmse_err = MMSE(sim) .- sim.xhist
+    map_err = MAP(sim) .- sim.xhist
+    n = length(first(map_err))
+    Σ = std.(sim.particle_hist)
+    fig = Figure()
+    for i in 1:n
+        ax = Axis(fig[i,1], ylabel="x_$i error")
+        σ = getindex.(Σ, i)
+        lines!(sim.thist, getindex.(mmse_err, i), label="MMSE error")
+        lines!(sim.thist, getindex.(map_err, i), label="MAP error")
+        lines!(sim.thist, 2 .* σ, color=:red, linestyle=:dash)
+        lines!(sim.thist, -2 .* σ, color=:red, linestyle=:dash)
+        isone(i) && axislegend(ax)
     end
     return fig
 end

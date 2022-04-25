@@ -22,18 +22,11 @@ P0 = 10.0*I(2) |> Matrix
 kf = UnscentedKF(ss_dt, x0, P0; α=0.01)
 
 sim = KFSimulator(kf, x0, u)
-simulate(sim, 15.)
+HW4.load!(sim, TIMES, X_DATA, Y_DATA)
+simulate(sim)
 
-idx = 1
-lines(getindex.(sim.xhist, idx))
-lines!(getindex.(sim.xphist, idx))
-current_figure()
+fig = HW4.plot_error(sim)
+save(joinpath(@__DIR__, "img", "P1bStateError.pdf"), fig)
 
-λ = HW4.lambda(kf)
-λ / (2 + λ)
-
-kf.Pkm
-
-scatter(first.(kf.sigma_points),last.(kf.sigma_points))
-
-sqrt(1/n  + 1)
+HW4.plot_meas(sim)
+save(joinpath(@__DIR__, "img", "P1bMeasInnovation.pdf"), fig)

@@ -205,10 +205,50 @@ function simulate(sim::KFSimulator)
         y = yhist[i+1]
         update!(kf, u, y)
 
-        xmhist[i+1] = kf.xm
-        xphist[i+1] = kf.xp
+        xmhist[i+1] = copy(kf.xm)
+        xphist[i+1] = copy(kf.xp)
         Pkmhist[i+1] = copy(kf.Pkm)
         Pkphist[i+1] = copy(kf.Pkp)
     end
     return sim
+end
+
+function plot_error(sim::KFSimulator)
+    Pkp = diag.(sim.Pkphist)
+    n = statedim(sim.kf)
+    fig = Figure()
+    for i in 1:n
+        ax = Axis(fig[i , 1], xlabel="t", ylabel="x_$i error")
+        σ = sqrt.(getindex.(Pkp, i))
+        e = getindex.(sim.xphist, i) .- getindex.(sim.xhist, i)
+        scatter!(ax, sim.thist, e, markersize=5)
+        lines!(sim.thist, 2 .* σ, color=:red, linestyle=:dash)
+        lines!(sim.thist, - 2 .* σ, color=:red, linestyle=:dash)
+    end
+    return fig
+end
+
+function measurements(ss, times, xm, u_f)
+    y_vec = Vector{Vector{Float64}}(undef, length(xm))
+    for (i,t) in enumerate(times[1:end-1])
+        y_vec[i+1] = meas(ss, xm[i+1], u_f(t))
+    end
+    return y_vec
+end
+
+function plot_meas(sim::KFSimulator)
+    Pkm = diag.(sim.Pkmhist)
+    ŷ = measurements(sim.kf.ss, sim.thist, sim.xmhist, sim.u)[2:end]
+    y = sim.yhist[2:end]
+    e_y = ŷ .- y
+    p = length(first(ŷ))
+    fig = Figure()
+    for i in 1:p
+        ax = Axis(fig[p, 1], xlabel="t", ylabel=L"e_{y,%$i}")
+        scatter!(ax, sim.thist[2:end], getindex.(e_y, p))
+        σ = sqrt.(getindex.(Pkm, p)[2:end])
+        lines!(sim.thist[2:end], 2 .* σ, color=:red, linestyle=:dash)
+        lines!(sim.thist[2:end], -2 .* σ, color=:red, linestyle=:dash)
+    end
+    return fig
 end
