@@ -19,12 +19,15 @@ u(t) = SA[2cos(0.75t)]
 ##
 x0 = zeros(2)
 P0 = 10.0*I(2) |> Matrix
-kf = UnscentedKF(ss_dt, x0, P0; α=sqrt(0.5/2  + 1))
+kf = UnscentedKF(ss_dt, x0, P0; α=0.01)
 
 sim = KFSimulator(kf, x0, u)
 simulate(sim, 15.)
 
-kf.sigma_points
+idx = 1
+lines(getindex.(sim.xhist, idx))
+lines!(getindex.(sim.xphist, idx))
+current_figure()
 
 λ = HW4.lambda(kf)
 λ / (2 + λ)

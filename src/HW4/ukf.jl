@@ -27,6 +27,11 @@ function UnscentedKF(ss::DTStateSpace, x0, P0; α=0.01, β=2.0, κ=0.0)
     return UnscentedKF(ss, sigma_points, κ, α, β, similar(x0), x0, wm, wc, similar(P0), P0)
 end
 
+function force_symm!(x)
+    x .+= x'
+    x ./= 2.
+end
+
 statedim(kf::UnscentedKF) = size(kf.Pkp, 1)
 
 function lambda(kf::UnscentedKF)
@@ -55,11 +60,8 @@ end
 
 function predict!(kf::UnscentedKF, u)
     χ = kf.sigma_points
-    if !isposdef(kf.Pkp)
-        @show kf.Pkp
-        kf.Pkp .+= I(size(kf.Pkp,1))*0.1
-    end
-    S = cholesky(kf.Pkp) |> Matrix
+    force_symm!(kf.Pkp)
+    S = cholesky(kf.Pkp).U
     n = statedim(kf)
 
     gen_sigma_points!(kf, kf.xp, S)
@@ -78,14 +80,15 @@ function predict!(kf::UnscentedKF, u)
     for i in eachindex(χ_bar)
         kf.Pkm .+= kf.wc[i]*(χ_bar[i] - kf.xm)*(χ_bar[i] - kf.xm)'
     end
+    kf.Pkm .+= kf.ss.Q
     return kf.xm
 end
 
 function correct!(kf::UnscentedKF, u, y)
     χ = kf.sigma_points
     n = statedim(kf)
-    !isposdef(kf.Pkm) && (kf.Pkm .+= I(size(kf.Pkm,1))*0.1)
-    S̄ = cholesky(kf.Pkm) |> Matrix
+    force_symm!(kf.Pkm)
+    S̄ = cholesky(kf.Pkm).U
 
     gen_sigma_points!(kf, kf.xm, S̄)
 
@@ -139,9 +142,9 @@ end
 function KFSimulator(kf::UnscentedKF, x0, u)
     return KFSimulator(
         Float64[],
-        [x0],
+        [copy(x0)],
         [Float64[]],
-        [kf.xp],
+        [copy(kf.xp)],
         [Float64[]],
         [copy(kf.Pkm)],
         [copy(kf.Pkp)],
@@ -184,8 +187,8 @@ function simulate(sim::KFSimulator, T::Float64)
         update!(kf, u, y)
 
         xhist[i+1] = x
-        xmhist[i+1] = kf.xm
-        xphist[i+1] = kf.xp
+        xmhist[i+1] = copy(kf.xm)
+        xphist[i+1] = copy(kf.xp)
         yhist[i+1] = y
         Pkmhist[i+1] = copy(kf.Pkm)
         Pkphist[i+1] = copy(kf.Pkp)
